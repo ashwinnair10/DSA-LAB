@@ -3,7 +3,7 @@
 #include<string.h>
 #define MAX_NODES 1000
 int al[MAX_NODES][MAX_NODES],arr[MAX_NODES][MAX_NODES] ,l[MAX_NODES], visit[MAX_NODES], n, a, b;
-int path[MAX_NODES], k = 0, cc = 0,cycle=0;
+int path[MAX_NODES], k = 0, cc = 0,cycle=0,count=0;
 void dfs(int i){
     if(!visit[al[i][0]])
     cc++;
@@ -22,7 +22,7 @@ void adfs(int i) {
         if (al[i][j] != -1 && !visit[al[i][j]]) {
             if (al[i][j] == b) {
                 path[k++] = al[i][j];
-                
+                count++;
                 for (int x = 0; x < k; x++) {
                     printf("%d ", path[x]);
                 }
@@ -87,10 +87,13 @@ int main() {
             printf("-1\n");
         }
         if(strcmp(ch,"a")==0){
+            count=0;
             for (int i = 0; i < n; i++)
             initialize();
             scanf("%d %d", &a, &b);
             adfs(a);
+            if(!count)
+            printf("-1\n");
         }
         if(strcmp(ch,"x")==0)
         break;

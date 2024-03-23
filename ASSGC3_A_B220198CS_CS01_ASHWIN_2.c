@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define MAX_NODES 100
 
 int adj[MAX_NODES][MAX_NODES];
-int visited[MAX_NODES], flag = 0, count = 0;
+int visited[MAX_NODES], in_stack[MAX_NODES], low[MAX_NODES];
+int stack[MAX_NODES], scc[MAX_NODES];
+int scc_count, stack_top;
 
 void initialize() {
     for (int i = 0; i < MAX_NODES; ++i) {
         visited[i] = 0;
+        in_stack[i] = 0;
+        low[i] = -1;
+        scc[i] = -1;
         for (int j = 0; j < MAX_NODES; ++j) {
             adj[i][j] = 0;
         }
@@ -17,93 +23,78 @@ void initialize() {
 }
 
 void addEdge(int u, int v) {
-    adj[u][v] = 1;
+    adj[u - 1][v - 1] = 1;
 }
 
-void BFS(int v, int n) {
-    int queue[MAX_NODES];
-    int front = 0, rear = 0;
-    queue[rear++] = v;
+void strongconnect(int v) {
     visited[v] = 1;
+    low[v] = v;
+    stack[++stack_top] = v;
+    in_stack[v] = 1;
 
-    while (front < rear) {
-        int current = queue[front++];
-        for (int i = 1; i <= n; ++i) {
-            if (adj[current][i] && !visited[i]) {
-                queue[rear++] = i;
-                visited[i] = 1;
-            } else if (adj[current][i] && visited[i] && i != v) {
-                flag = 1;
+    for (int i = 0; i < MAX_NODES; ++i) {
+        if (adj[v][i]) {
+            if (!visited[i]) {
+                strongconnect(i);
+                low[v] = (low[v] < low[i]) ? low[v] : low[i];
+            } else if (in_stack[i]) {
+                low[v] = (low[v] < low[i]) ? low[v] : low[i];
             }
         }
     }
-}
 
-int isPath(int src, int des, int n) {
-    for (int i = 0; i < MAX_NODES; ++i) {
-        visited[i] = 0;
+    if (low[v] == v) {
+        int w;
+        do {
+            w = stack[stack_top--];
+            in_stack[w] = 0;
+            scc[w] = scc_count;
+        } while (w != v);
+        scc_count++;
     }
-    BFS(src, n);
-    return visited[des];
+}
+int isCyclicUtil(int v, int visited[], int recStack[]) {
+    if (visited[v] == 0) {
+        visited[v] = 1;
+        recStack[v] = 1;
+
+        for (int i = 0; i < MAX_NODES; i++) {
+            if (adj[v][i]) {
+                if (!visited[i] && isCyclicUtil(i, visited, recStack)) {
+                    return 1;
+                } else if (recStack[i]) {
+                    return 1;
+                }
+            }
+        }
+    }
+    recStack[v] = 0;
+    return 0;
 }
 
 int checkCycle(int V) {
-    int deg[MAX_NODES] = {0};
-    int queue[MAX_NODES];
-    int front = 0, rear = 0;
-    int counter = 0;
+    int visited[MAX_NODES] = {0};
+    int recStack[MAX_NODES] = {0};
 
     for (int i = 0; i < V; i++) {
-        for (int j = 0; j < V; j++) {
-            if (adj[j][i]) {
-                deg[i]++;
-            }
+        if (isCyclicUtil(i, visited, recStack)) {
+            return 1;
         }
     }
-
-    for (int i = 0; i < V; i++) {
-        if (deg[i] == 0) {
-            queue[rear++] = i;
-        }
-    }
-
-    while (front < rear) {
-        int u = queue[front++];
-        counter++;
-        for (int v = 0; v < V; v++) {
-            if (adj[u][v]) {
-                deg[v]--;
-                if (deg[v] == 0) {
-                    queue[rear++] = v;
-                }
-            }
-        }
-    }
-
-    return counter != V;
+    return 0;
 }
 
-void findSCC(int n, int edges[][2]) {
-    int is_scc[MAX_NODES] = {0};
-    for (int i = 1; i <= n; ++i) {
-        if (!is_scc[i]) {
-            int scc[MAX_NODES], scc_count = 0;
-            scc[scc_count++] = i;
-
-            for (int j = i + 1; j <= n; ++j) {
-                if (!is_scc[j] && isPath(i, j, n) && isPath(j, i, n)) {
-                    is_scc[j] = 1;
-                    scc[scc_count++] = j;
-                }
-            }
-            count++;
+void findSCC(int n) {
+    for (int i = 0; i < n; ++i) {
+        if (!visited[i]) {
+            strongconnect(i);
         }
     }
 }
 
 int main() {
     initialize();
-    int V = 6;
+    int V;
     scanf("%d", &V);
     int edges[1000][2];
     for (int i = 0; i < 1000; i++)
@@ -121,13 +112,24 @@ int main() {
             }
         }
     }
-    if (checkCycle(V)) {
-        printf("-1\n");
-    } else {
-        printf("1\n");
-    }
-    findSCC(V, edges);
-    printf("Count : %d\n", count);
 
+    while (1) {
+        char ch[2];
+        scanf("%s", ch);
+        ch[1] = '\0';
+        if (strcmp(ch, "t") == 0) {
+            if (checkCycle(V)) {
+                printf("-1\n");
+            } else {
+                printf("1\n");
+            }
+        }
+        if (strcmp(ch, "c") == 0) {
+            findSCC(V);
+            printf("%d\n", scc_count);
+        }
+        if (strcmp(ch, "x") == 0)
+            break;
+    }
     return 0;
 }

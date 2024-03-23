@@ -101,6 +101,8 @@ void articulation(){
         if(art[i])
         ap++;
     }
+    if(!ap)
+    ap=-1;
     printf("%d",ap);
 }
 int main(){
@@ -132,10 +134,9 @@ int main(){
         scanf("%s",ch);
         ch[1]='\0';
         if(strcmp(ch,"n")==0){
-            printf("Connected components : %d\n",cc);
+            printf("%d\n",cc);
         }
         if(strcmp(ch,"s")==0){
-            printf("Size of components : ");
             inorder(head);
             printf("\n");
         }
@@ -145,13 +146,14 @@ int main(){
             for(int i=0;i<n;i++)
             if(!visit[i])
             bridges(i,-1);
-            printf("Number of bridges : %d\n",b);
+            if(!b)
+            b=-1;
+            printf("%d\n",b);
         }
         if(strcmp(ch,"a")==0){
             for(int i=0;i<n;i++)
             visit[i]=0;
             t=0;
-            printf("Number of articulation points : ");
             articulation();
             printf("\n");
         }
