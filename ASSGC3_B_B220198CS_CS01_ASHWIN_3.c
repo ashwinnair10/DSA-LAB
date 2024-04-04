@@ -48,10 +48,6 @@ int main(){
                 break;
         }
     }
-    for (int i = 0; i < n; i++)
-        for (int j = 1; j < n; j++)
-            if (a[i][j] != -1)
-                graph[a[i][0] - 1][a[i][j] - 1] = b[i][j];
     int src;
     scanf("%d",&src);
     dijkstra(graph, src-1);
